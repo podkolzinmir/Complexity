@@ -99,6 +99,23 @@ function traverseWithParents(object, visitor)
     }
 }
 
+// countConditions
+function countCondition(node){
+
+	var count = 0;
+	traverseWithParents(node, function(node) 
+	{
+		if ((node.type === "LogicalExpression") && ((node.operator === "&&") || (node.operator === "||")))
+		{
+			count++;
+		}
+	});
+	if (count > 0) {
+		count++;
+	}
+	return count;
+}
+
 function complexity(filePath)
 {
 	var buf = fs.readFileSync(filePath, "utf8");
@@ -123,10 +140,32 @@ function complexity(filePath)
 			builder.StartLine    = node.loc.start.line;
 
 			builders[builder.FunctionName] = builder;
+			builder.ParameterCount = node.params.length;
+
+			var conditions = new Array();
+
+			// 3a: SimpleCyclomaticComplexity 
+			traverseWithParents(node, function(node){
+				if (isDecision(node)== true){
+					builder.SimpleCyclomaticComplexity ++;
+
+					// 3B: MaxConditions
+					var currConditions = countCondition(node);
+					conditions.push(currConditions);
+				}
+			});
+			
+			// getting max conditions from array conditions
+			if (conditions.length > 0){
+				builder.MaxConditions = Math.max.apply(Math, conditions);
+			}
 		}
 
+		// 2b: String Usage
+		if (node.type === 'Literal') {
+		fileBuilder.Strings ++;
+		}
 	});
-
 }
 
 // Helper function for counting children of node.
