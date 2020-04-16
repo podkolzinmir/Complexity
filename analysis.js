@@ -162,7 +162,7 @@ function complexity(filePath)
 		}
 
 		// 2b: String Usage
-		if (node.type === 'Literal') {
+		if (node.type === 'literal') {
 		fileBuilder.Strings ++;
 		}
 	});
